@@ -22,7 +22,8 @@ let focusMode = true;
 let scaleFactor = 7;
 
 function setup() {
-  createCanvas(800, 600);
+  let canvas = createCanvas(800, 600);
+  canvas.parent('canvas-holder');
   reset();
 }
 
@@ -256,28 +257,29 @@ function focus_result(m, currentTime) {
 }
 
 function keyPressed() {
+  console.log("Key:", key, "KeyCode:", keyCode);
   if (key === 'r' || key === 'R') {
     reset();
   }
 
-  if (step === 1 && keyCode === ENTER) {
+  if (step === 1 && keyCode === 13) {
     end_input();
     return;
   }
   if (step !== 4) return;
 
-  if (keyCode === UP_ARROW) {
+  if (keyCode === 38 ) {
     if (k < n) k++;
     console.log(" " + k + " " + cwx[k] + " " + cwy[k] + " " + ccwx[k] + " " + ccwy[k]);
-  } else if (keyCode === DOWN_ARROW) {
+  } else if (keyCode === 40) {
     if (k > 0) k--;
   } else if (key === 'f' || key === 'F') {
     focusMode = !focusMode;
     return false; 
-  } else if (keyCode === RIGHT_ARROW) {
+  } else if (keyCode === 39) {
     if (scaleFactor <= 15) scaleFactor += 0.02;
     console.log(scaleFactor);
-  } else if (keyCode === LEFT_ARROW) {
+  } else if (keyCode === 37) {
     if (scaleFactor >= 0.7) scaleFactor -= 0.02;
     console.log(scaleFactor);
   }
