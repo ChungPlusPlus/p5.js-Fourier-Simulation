@@ -1,5 +1,5 @@
 //Made in 2021
-//Ref: https://www.youtube.com/watch?v=VqeGQkRaSSg
+//Ref: https://www.youtube.com/watch?v=VqeGQkRaSSg (Korean Explanation video explaining Fourier Coefficeint)
 // Original code of this project
 
 int n=100; int step=0;// -n ~ n revolution period
