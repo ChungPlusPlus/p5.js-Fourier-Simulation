@@ -1,5 +1,6 @@
 //Made in 2021
 //Ref: https://www.youtube.com/watch?v=VqeGQkRaSSg
+// Original code of this project
 
 int n=100; int step=0;// -n ~ n revolution period
 float[] cwx=new float[n+1]; float[] cwy=new float[n+1];
