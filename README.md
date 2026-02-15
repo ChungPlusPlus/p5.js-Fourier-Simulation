@@ -7,6 +7,8 @@ Visualizes the Fourier Series by reconstructing user-drawn paths using epicycles
 
 You can test with no installation via the [link](https://chungplusplus.github.io/p5.js-Fourier-Simulation/).
 
+<p align="center"><img src = banner.png width="30%" height="30%"></p>
+
 ## Details
 - Interactive Drawing: Draw any shape with your mouse, then press Enter to start the calculation.
 
