@@ -1,5 +1,6 @@
-let n = 100; // -n ~ n revolution period
+let maxN = 100; // -n ~ n revolutions per period
 let step = 0;
+// status: 1 - input, 2 - process, 3- solve, 4 - show result, -1 - error
 
 let cwx = [];
 let cwy = [];
@@ -14,7 +15,7 @@ let iy = [0];
 let targetN = -1;
 let procN = 0;
 let t = 0;
-let k = 30;
+let n = 30;
 let unit = 0.05;
 
 let showOriginal = false;
@@ -22,8 +23,8 @@ let focusMode = true;
 let scaleFactor = 7;
 
 function setup() {
-  let canvas = createCanvas(800, 600);
-  canvas.parent('canvas-holder');
+  let canvas = createCanvas(800, 600); // create a 800 * 600 pixel canvas
+  canvas.parent('canvas-holder'); // move to the right div
   reset();
 }
 
@@ -32,27 +33,25 @@ function reset() {
   background(0);
   
   step = 1;
-  targetN = -1;
+  targetN = 0;
   procN = 0;
   t = 0;
   
-  k = 30;
-  scaleFactor = 7;
+  n = 30; // 30 pairs(60 in total) vectors will be rotated
+  scaleFactor = 7; // scale factor for focus mode
   focusMode = true;
   showOriginal = false;
 
   ix = []; 
   iy = [];
-  ix[0] = -1;
-  iy[0] = 0;
 
   dotx = [];
   doty = [];
 
-  cwx = new Array(n + 1).fill(0);
-  cwy = new Array(n + 1).fill(0);
-  ccwx = new Array(n + 1).fill(0);
-  ccwy = new Array(n + 1).fill(0);
+  cwx = new Array(maxN + 1).fill(0);
+  cwy = new Array(maxN + 1).fill(0);
+  ccwx = new Array(maxN + 1).fill(0);
+  ccwy = new Array(maxN + 1).fill(0);
 
   stroke(0);
   fill(0);
@@ -67,13 +66,13 @@ function draw() {
     process(procN);
     procN++;
   } else if (step === 3) {
-    targetN++;
     textSize(32);
-    fill(255); // 텍스트 색상 추가
-    if (targetN <= n) {
+    fill(255);
+    if (targetN <= maxN) {
       background(0);
-      text("Loading : " + targetN + " / " + n, width / 2 - 100, height - 70);
+      text("Loading : " + targetN + " / " + maxN, width / 2 - 100, height - 70);
       solve(targetN);
+      targetN++;
     } else {
       step = 4;
     }
@@ -81,27 +80,31 @@ function draw() {
     background(0);
     
     if (focusMode)
-      focus_result(k, t);
+      focus_result(n, t);
     else
-      result(k, t);
+      result(n, t);
       
     t += 0.001;
     fill('#FFFF00');
     noStroke();
+  } else { // unexpected step
+    background(0);
+    fill(255);
+    textSize(32);
+    text("Error! Please press 'R' to reset.", width / 2 - 100, height / 2);
   }
 }
 
 function input() {
-  if (ix[0] === -1) {
-    ix[0] = mouseX;
-    iy[0] = mouseY;
+  if (ix.length === 0) {
+    ix.push(mouseX);
+    iy.push(mouseY);
+    return;
   }
 
   let prevx = ix[ix.length - 1];
   let prevy = iy[iy.length - 1];
-  let l = dist(mouseX, mouseY, prevx, prevy);
-  
-  if (l > 0) {
+  if (dist(mouseX, mouseY, prevx, prevy) > 0) {
     ix.push(mouseX);
     iy.push(mouseY);
     stroke('#FF00FF');
@@ -110,17 +113,24 @@ function input() {
 }
 
 function end_input() {
-    console.log("Input ended.");
-    ix.push(ix[0]);
-    iy.push(iy[0]);
-    step = 2;
+    if(ix.length === 0) {
+      step = -1;
+    } else {
+      ix.push(ix[0]);
+      iy.push(iy[0]);
+      procN = 0;
+      step = 2;
+    }
 }
 
 function process(i) {
   if (i >= ix.length - 1) {
+    targetN = 0;
     step = 3;
     return;
   }
+
+  // split every line into equal small pieces
   let l = dist(ix[i], iy[i], ix[i + 1], iy[i + 1]);
   for (let j = 0; j < l; j += unit) {
     let tempX = map(j, 0, l, ix[i], ix[i + 1]);
@@ -133,6 +143,7 @@ function process(i) {
   circle(ix[i + 1], iy[i + 1], 5);
 }
 
+// solve the initial position of the vector that rotates currTargetN times per period
 function solve(currTargetN) {
   let transx = new Array(dotx.length).fill(0);
   let transy = new Array(doty.length).fill(0);
@@ -240,6 +251,7 @@ function focus_result(m, currentTime) {
   let end_x = cwx[0];
   let end_y = cwy[0];
   
+  // calculate the end point of the vector
   for (let i = 1; i <= m; i++) {
     end_x += cwx[i] * cos(-2 * PI * i * currentTime);
     end_y += cwx[i] * -sin(-2 * PI * i * currentTime);
@@ -251,6 +263,8 @@ function focus_result(m, currentTime) {
     end_x += ccwy[i] * sin(2 * PI * i * currentTime);
     end_y += ccwy[i] * cos(2 * PI * i * currentTime);
   }
+
+  // translate the end point to the center of the canvas
   translate(-end_x + width / 2 / scaleFactor, -end_y + height / 2 / scaleFactor);
 
   result(m, currentTime);
@@ -269,18 +283,19 @@ function keyPressed() {
   if (step !== 4) return;
 
   if (keyCode === 38 ) {
-    if (k < n) k++;
-    console.log(" " + k + " " + cwx[k] + " " + cwy[k] + " " + ccwx[k] + " " + ccwy[k]);
+    if (n < maxN) n++;
+    console.log("Current rotating vectors: " + 2*n);
   } else if (keyCode === 40) {
-    if (k > 0) k--;
+    if (n > 1) n--;
+    console.log("Current rotating vectors: " + 2*n);
   } else if (key === 'f' || key === 'F') {
     focusMode = !focusMode;
     return false; 
   } else if (keyCode === 39) {
     if (scaleFactor <= 15) scaleFactor += 0.02;
-    console.log(scaleFactor);
+    console.log("Current scaleFactor: " + scaleFactor);
   } else if (keyCode === 37) {
     if (scaleFactor >= 0.7) scaleFactor -= 0.02;
-    console.log(scaleFactor);
+    console.log("Current scaleFactor: " + scaleFactor);
   }
 }
